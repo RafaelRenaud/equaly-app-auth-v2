@@ -1,0 +1,253 @@
+openapi: "3.0.3"
+info:
+  title: eQualy Authentication Service
+  description: "Service responsible for managing authentication and authorization of users."
+  version: 2.0.0
+  contact:
+    email: renaudrafa@hotmail.com
+    name: Rafael Renaud Miranda
+
+servers:
+  - url: "/authentication/v2"
+
+tags:
+  - name: Authentication
+    description: "OAuth 2.0 Authentication & Authorization"
+  - name: AccountRecovery
+    description: "User account recovery methods"
+
+paths:
+  /oauth/token:
+    post:
+      description: "Generate an OAuth 2.0 Access Token using Password Grant."
+      summary: "User Login"
+      operationId: login
+      tags:
+        - Authentication
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: "Access Token Response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: "User not found"
+        "500":
+          description: "Internal server error"
+      security:
+        - oauth2_password: []
+
+  /oauth/token/refresh:
+    post:
+      description: "Refresh an expired access token using a refresh token."
+      summary: "Refresh OAuth 2.0 Access Token"
+      operationId: refreshToken
+      tags:
+        - Authentication
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/OAuthRefreshTokenRequest"
+      responses:
+        "201":
+          description: "New Access Token Created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: "Refresh token is invalid or expired"
+        "429":
+          description: "Too many requests, please try again later"
+      security:
+        - bearerAuth: []
+
+  /recovery:
+    post:
+      description: "Generate and send a recovery account code (RAC) to the user's email."
+      summary: "Generate Recovery Code"
+      operationId: recovery
+      tags:
+        - AccountRecovery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecoveryRequest"
+      responses:
+        "202":
+          $ref: "#/components/responses/Accepted"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: "User not found"
+        "500":
+          description: "Internal server error"
+      security: []
+
+  /recovery/{recovery_id}:
+    patch:
+      description: "Recover an account by setting a new password using a recovery code."
+      summary: "Recover Account"
+      operationId: recoverAccount
+      tags:
+        - AccountRecovery
+      parameters:
+        - $ref: "#/components/parameters/RecoveryCode"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountActivationRequest"
+      responses:
+        "204":
+          description: "Account recovered successfully"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "404":
+          description: "Recovery code not found"
+        "500":
+          description: "Internal server error"
+      security: []
+
+components:
+  securitySchemes:
+    oauth2_password:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: "/oauth/token"
+          scopes:
+            read: "Read access"
+            write: "Write access"
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        organization_alias:
+          type: string
+          description: "Organization alias"
+          example: "companyX"
+        username:
+          type: string
+          description: "User login"
+          example: "admin"
+        password:
+          type: string
+          format: password
+          description: "User password"
+      required: [organization_alias, username, password]
+
+    OAuthRefreshTokenRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          example: "ZTlhMzY5..."
+      required: [refresh_token]
+
+    OAuthTokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: "OAuth 2.0 Access Token"
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTIzNDU2Iiwicm9sZSI6IkFkbWluIiwidGVuYW50X2NvZGVzIjoiMTIzIiwiaWF0IjoxNTE2MjM5MDIwfQ.C_nNejjfdD2W4Dk1OeK4mJjXX-oLpgA5rmcdaVQw"
+        token_type:
+          type: string
+          example: "Bearer"
+        expires_in:
+          type: integer
+          example: 14400
+        refresh_token:
+          type: string
+          description: "Token used to renew the access token"
+          example: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+      required: [access_token, token_type, expires_in]
+    RecoveryRequest:
+      type: object
+      properties:
+        organizationAlias:
+          type: string
+          description: "Alias of the organization the user belongs to."
+          example: "companyX"
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        login:
+          type: string
+          example: "login123"
+      required: [organizationAlias, email, login]
+
+    AccountActivationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        newPassword:
+          type: string
+          format: password
+          description: "The new password to be set for the account."
+      required: [email, newPassword]
+
+  parameters:
+    OrganizationAlias:
+      name: "organizationAlias"
+      in: path
+      required: true
+      description: "Alias of the organization"
+      schema:
+        type: string
+
+    RecoveryCode:
+      name: "recovery_id"
+      in: path
+      required: true
+      description: "Account Recovery Code"
+      schema:
+        type: string
+
+  responses:
+    Accepted:
+      description: "Request has been accepted and will be processed."
+    BadRequest:
+      description: "Invalid request, check the payload or parameters."
+    Unauthorized:
+      description: "Authentication failed. Invalid credentials."
+    Conflict:
+      description: "A conflict occurred (e.g., resource already exists)."
+    NotFound:
+      description: "The requested resource was not found."
+    InternalServerError:
+      description: "Internal server error."
+    TooManyRequests:
+      description: "Too many requests, please try again later."

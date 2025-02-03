@@ -1,0 +1,37 @@
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: "/authentication/v2"
+
+spring:
+  redis:
+    database: ${REDIS_DATABASE}
+    host: ${REDIS_URL}
+    port: ${REDIS_PORT}
+    password: ${REDIS_PASSWORD}
+    timeout: 5000
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+  jms:
+    servicebus:
+      connection-string: ${SERVICE_HUB_URL}
+      pricing-tier: ${SERVICE_HUB_TIER}
+    email:
+      queue-name: ${SERVICE_HUB_QUEUE}
+
+logging:
+  level:
+    root: debug
