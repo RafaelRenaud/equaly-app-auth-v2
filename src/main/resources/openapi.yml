@@ -7,16 +7,43 @@ info:
     email: renaudrafa@hotmail.com
     name: Rafael Renaud Miranda
 
-servers:
-  - url: "/authentication/v2"
-
 tags:
   - name: Authentication
     description: "OAuth 2.0 Authentication & Authorization"
   - name: AccountRecovery
     description: "User account recovery methods"
+  - name: Company
+    description: "User companies"
 
 paths:
+  /user/{user_id}/companies:
+    get:
+      description: "List User Companies for Multicorp Login"
+      summary: "Lists User Companies"
+      operationId: getCompanies
+      x-spring-paginated: true
+      tags:
+        - Company
+      parameters:
+        - $ref: "#/components/parameters/user_id"
+        - $ref: "#/components/parameters/alias"
+        - $ref: "#/components/parameters/document"
+        - $ref: "#/components/parameters/status"
+      responses:
+        "200":
+          description: "Companies Searched Successfully"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompaniesResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: "User not found"
+        "500":
+          description: "Internal server error"
   /oauth/token:
     post:
       description: "Generate an OAuth 2.0 Access Token using Password Grant."
@@ -44,9 +71,6 @@ paths:
           description: "User not found"
         "500":
           description: "Internal server error"
-      security:
-        - oauth2_password: []
-
   /oauth/token/refresh:
     post:
       description: "Refresh an expired access token using a refresh token."
@@ -58,7 +82,7 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/OAuthRefreshTokenRequest"
+              $ref: "#/components/schemas/OAuthRefreshTokenAndValidateRequest"
       responses:
         "201":
           description: "New Access Token Created"
@@ -66,6 +90,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OAuthTokenResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: "Refresh token is invalid or expired"
+        "429":
+          description: "Too many requests, please try again later"
+      security:
+        - bearerAuth: []
+  /oauth/token/validate:
+    get:
+      description: "Validate a JWT Token"
+      summary: "Validate a JWT Token"
+      operationId: validateToken
+      tags:
+        - Authentication
+      responses:
+        "204":
+          description: "Token Validated Successfully"
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
@@ -100,7 +144,6 @@ paths:
           description: "User not found"
         "500":
           description: "Internal server error"
-      security: []
 
   /recovery/{recovery_id}:
     patch:
@@ -110,7 +153,7 @@ paths:
       tags:
         - AccountRecovery
       parameters:
-        - $ref: "#/components/parameters/RecoveryCode"
+        - $ref: "#/components/parameters/RecoveryToken"
       requestBody:
         content:
           application/json:
@@ -129,42 +172,43 @@ paths:
           description: "Recovery code not found"
         "500":
           description: "Internal server error"
-      security: []
 
 components:
   securitySchemes:
-    oauth2_password:
-      type: oauth2
-      flows:
-        password:
-          tokenUrl: "/oauth/token"
-          scopes:
-            read: "Read access"
-            write: "Write access"
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-
   schemas:
     LoginRequest:
       type: object
       properties:
-        organization_alias:
-          type: string
-          description: "Organization alias"
-          example: "companyX"
-        username:
+        companyId:
+          type: integer
+          description: "Company ID"
+          example: 1
+        login:
           type: string
           description: "User login"
-          example: "admin"
+          example: "equalyUser"
+        email:
+          type: string
+          description: "User email"
+          example: "equalyuser@equaly.com.br"
+          format: email
+        document:
+          type: string
+          description: "User document"
+          example: "50598754372"
         password:
           type: string
           format: password
           description: "User password"
-      required: [organization_alias, username, password]
-
-    OAuthRefreshTokenRequest:
+        isAdmin:
+          type: boolean
+          description: "System Administrator Indicator"
+      required: [password, isAdmin]
+    OAuthRefreshTokenAndValidateRequest:
       type: object
       properties:
         refresh_token:
@@ -189,35 +233,118 @@ components:
           type: string
           description: "Token used to renew the access token"
           example: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
-      required: [access_token, token_type, expires_in]
+    CompaniesResponse:
+      type: object
+      properties:
+        companies:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/Company"
+        pageable:
+          $ref: "#/components/schemas/PageableTemplate"
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP Status Code
+          example: 422
+        status:
+          type: string
+          description: HTTP Status Type
+          example: "Unrpocessable Entity"
+        message:
+          type: string
+          description: HTTP Status Message
+          example: "O campo 'email' é obrigatório."
+        timestamp:
+          type: string
+          description: Request Timestamp
+          example: "2025-03-29T12:00:00.000+00:00"
+    PageableTemplate:
+      type: object
+      properties:
+        size:
+          type: integer
+          description: Quantidade de elementos por página
+          example: 20
+        totalElements:
+          type: integer
+          description: Total de elementos na busca
+          example: 50
+        totalPages:
+          type: integer
+          description: Total de páginas disponíveis
+          example: 3
+        number:
+          type: integer
+          description: Número da página atual
+          example: 0
+    Company:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+          description: Company ID
+        name:
+          type: string
+          description: Company Name
+          example: eQualy
+        alias:
+          type: string
+          description: Company Alias
+          example: equaly
+        tradingName:
+          type: string
+          description: Company Trading Name
+          example: eQualy Quality Service SA
+        displayName:
+          type: string
+          description: Company Display Name
+          example: eQualy Quality Service
+        document:
+          type: string
+          description: Company CNPJ
+          example: 12918273000123
+        status:
+          type: string
+          description: Company Status
+          example: ACTIVE
+        logoUri:
+          type: string
+          description: Logo Uri
+          example: https://s3.aws.equaly.com.br/blob/v1/logo.png
     RecoveryRequest:
       type: object
       properties:
-        organizationAlias:
+        companyAlias:
           type: string
-          description: "Alias of the organization the user belongs to."
-          example: "companyX"
-        email:
-          type: string
-          format: email
-          example: "user@example.com"
+          description: "Alias of the company the user belongs to."
+          example: "equaly"
         login:
           type: string
           example: "login123"
-      required: [organizationAlias, email, login]
+      required: [companyAlias, login]
 
     AccountActivationRequest:
       type: object
       properties:
+        rac:
+          type: string
+          description: RAC Code
+          example: 123456
         email:
           type: string
+          description: User Email
           format: email
           example: "user@example.com"
         newPassword:
           type: string
           format: password
           description: "The new password to be set for the account."
-      required: [email, newPassword]
+      required: [rac, email, newPassword]
 
   parameters:
     OrganizationAlias:
@@ -227,27 +354,83 @@ components:
       description: "Alias of the organization"
       schema:
         type: string
-
-    RecoveryCode:
+    RecoveryToken:
       name: "recovery_id"
       in: path
       required: true
-      description: "Account Recovery Code"
+      description: "Account Recovery Token"
       schema:
         type: string
-
+    user_id:
+      name: "user_id"
+      in: path
+      required: true
+      description: "User Document or Email"
+      schema:
+        type: string
+    alias:
+      name: "alias"
+      in: query
+      required: false
+      explode: false
+      description: "Company Alias Filter"
+      schema:
+        type: string
+        example: "equal"
+    document:
+      name: "document"
+      in: query
+      required: false
+      explode: false
+      description: "Company Document Filter"
+      schema:
+        type: string
+        example: "505987"
+    status:
+      name: "status"
+      in: query
+      required: false
+      explode: false
+      description: "Company Status Filter"
+      schema:
+        type: string
+        example: "INACTIVE"
   responses:
     Accepted:
       description: "Request has been accepted and will be processed."
     BadRequest:
-      description: "Invalid request, check the payload or parameters."
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     Unauthorized:
       description: "Authentication failed. Invalid credentials."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     Conflict:
       description: "A conflict occurred (e.g., resource already exists)."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     NotFound:
       description: "The requested resource was not found."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     InternalServerError:
       description: "Internal server error."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     TooManyRequests:
       description: "Too many requests, please try again later."
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
