@@ -47,6 +47,11 @@ public class RecoveryService implements RecoveryUseCase {
                 this.generateRAC(),
                 user.getId(),
                 user.getEmail(),
+                user.getUniversalUser().getName(),
+                user.getUsername(),
+                user.getCompany().getName(),
+                user.getCompany().getDisplayName(),
+                user.getCompany().getAlias(),
                 LocalDateTime.now()
         );
 
