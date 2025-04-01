@@ -1,0 +1,21 @@
+
+u
+java:S1104"XMake TOKEN_PREFIX a static final constant or non-public and provide accessors if needed.(Æúª8ß¸ˆ³â1
+u
+java:S1104"XMake BASIC_PREFIX a static final constant or non-public and provide accessors if needed.(œ™‰†8¦‹³â1
+{
+java:S1104	"YMake BEARER_PREFIX a static final constant or non-public and provide accessors if needed.(ì©ë—ÿÿÿÿÿ8¦‹³â1
+O
+java:S1444"2Make this "public static TOKEN_PREFIX" field final(Æúª8ß¸ˆ³â1
+O
+java:S1444"2Make this "public static BASIC_PREFIX" field final(œ™‰†8¦‹³â1
+U
+java:S1444	"3Make this "public static BEARER_PREFIX" field final(ì©ë—ÿÿÿÿÿ8¦‹³â1
+t
+java:S3008"WRename this field "TOKEN_PREFIX" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(Æúª8à¸ˆ³â1
+t
+java:S3008"WRename this field "BASIC_PREFIX" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(œ™‰†8Ÿ¦‹³â1
+z
+java:S3008	"XRename this field "BEARER_PREFIX" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ì©ë—ÿÿÿÿÿ8Ÿ¦‹³â1
+\
+java:S1118":Add a private constructor to hide the implicit public one.(“³±ûÿÿÿÿ8è¸ˆ³â1

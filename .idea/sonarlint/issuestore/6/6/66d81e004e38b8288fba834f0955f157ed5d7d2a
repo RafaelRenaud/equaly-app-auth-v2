@@ -1,0 +1,9 @@
+
+…
+java:S6813"BRemove this field injection and use constructor injection instead.(êæÄŞ8µóÔ‚‰2J$f2b9aa64-999f-4ec6-912e-b1adfe9a3831
+–
+java:S18546"NRemove this useless assignment to local variable "passwordEmailOrNewPassword".(Šñòıÿÿÿÿ8ºóÔ‚‰2J$3f00131c-ead6-4390-85fc-caa08f0bde02
+‡
+java:S14816"?Remove this unused "passwordEmailOrNewPassword" local variable.(Šñòıÿÿÿÿ8»óÔ‚‰2J$f95c1a90-2d76-439e-be1b-13cb3791e25d
+–
+java:S1128"NRemove this unused import 'org.springframework.security.crypto.bcrypt.BCrypt'.(¨úì®ÿÿÿÿÿ8¼óÔ‚‰2J$d38fbb94-fd91-4a1e-bc73-751ab8c76152
