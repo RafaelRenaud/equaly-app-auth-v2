@@ -52,11 +52,11 @@ public class AuthenticationService implements AuthenticationUseCase {
     public void validateAuthentication(User user, String password, Boolean isAdmin, Boolean refreshSession){
 
         if(refreshSession){
-            if(user == null || !user.getIsActive() || user.getLastLogin() == null){
+            if(user == null || !user.getIsActive() || user.getRoles().isEmpty() || user.getLastLogin() == null){
                 throw new BusinessException(messageSource.getMessage("error.user_not_active", null, LocaleContextHolder.getLocale()));
             }
         }else{
-            if(user == null || !user.getIsActive() || user.getLastLogin() == null || !passwordEncoder.matches(password, user.getPassword())){
+            if(user == null || !user.getIsActive() || user.getRoles().isEmpty() || user.getLastLogin() == null || !passwordEncoder.matches(password, user.getPassword())){
                 throw new BusinessException(messageSource.getMessage("error.user_not_active", null, LocaleContextHolder.getLocale()));
             }
         }
