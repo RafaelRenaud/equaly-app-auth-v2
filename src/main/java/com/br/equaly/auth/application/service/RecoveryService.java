@@ -40,23 +40,28 @@ public class RecoveryService implements RecoveryUseCase {
     @Override
     public void sendRecoveryToken(RecoveryRequest recoveryRequest) {
         User user = userUseCase.loadUserByUsername(recoveryRequest.getLogin());
-        this.validateRecovery(user, recoveryRequest.getCompanyAlias());
 
-        RecoveryTokenEntity recoveryToken = new RecoveryTokenEntity(
-                Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8)),
-                this.generateRAC(),
-                user.getId(),
-                user.getEmail(),
-                user.getUniversalUser().getName(),
-                user.getUsername(),
-                user.getCompany().getName(),
-                user.getCompany().getDisplayName(),
-                user.getCompany().getAlias(),
-                LocalDateTime.now()
-        );
+        if (user != null
+                && user.getIsActive()
+                && user.getCompany().getIsActive()
+                && recoveryRequest.getCompanyAlias().equals(user.getCompany().getAlias())
+                && user.getDepartment().getIsActive()) {
+            RecoveryTokenEntity recoveryToken = new RecoveryTokenEntity(
+                    Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8)),
+                    this.generateRAC(),
+                    user.getId(),
+                    user.getEmail(),
+                    user.getUniversalUser().getName(),
+                    user.getUsername(),
+                    user.getCompany().getName(),
+                    user.getCompany().getDisplayName(),
+                    user.getCompany().getAlias(),
+                    LocalDateTime.now()
+            );
 
-        recoveryTokenRepository.save(recoveryToken);
-        recoveryQueuePort.sendRecoveryEmail(recoveryToken);
+            recoveryTokenRepository.save(recoveryToken);
+            recoveryQueuePort.sendRecoveryEmail(recoveryToken);
+        }
     }
 
     @Override
@@ -68,14 +73,14 @@ public class RecoveryService implements RecoveryUseCase {
         }
 
         User user = userUseCase.getUserById(recoveryToken.get().getUserId());
-        this.validateRecovery(user, user.getCompany().getAlias());
 
-        if(recoveryToken.get().getCode().equals(accountActivationRequest.getRac())
+        if(user != null && user.getIsActive()
+                && user.getCompany().getIsActive()
+                && user.getDepartment().getIsActive()
+                && recoveryToken.get().getCode().equals(accountActivationRequest.getRac())
                 && accountActivationRequest.getEmail().equals(user.getEmail())){
             this.changePassword(user, accountActivationRequest.getNewPassword());
             recoveryTokenRepository.deleteById(recoveryId);
-        }else{
-            throw new BusinessException(messageSource.getMessage("error.generic", null, LocaleContextHolder.getLocale()));
         }
     }
 
@@ -87,17 +92,6 @@ public class RecoveryService implements RecoveryUseCase {
             throw new BusinessException(messageSource.getMessage("error.invalid_new_password", null, LocaleContextHolder.getLocale()));
         }
         userUseCase.updateUserPassword(user, bCryptPasswordEncoder.encode(newPassword));
-    }
-
-    public void validateRecovery(User user, String companyAlias) {
-        if (user == null
-                || !user.getIsActive()
-                || user.getLastLogin() == null
-                || !user.getCompany().getIsActive()
-                || !companyAlias.equals(user.getCompany().getAlias())
-                || !user.getDepartment().getIsActive()) {
-            throw new BusinessException(messageSource.getMessage("error.generic", null, LocaleContextHolder.getLocale()));
-        }
     }
 
     public String generateRAC() {

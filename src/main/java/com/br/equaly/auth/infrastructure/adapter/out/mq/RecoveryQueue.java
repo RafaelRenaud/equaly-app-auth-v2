@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
+
 @Component
 public class RecoveryQueue implements RecoveryQueuePort {
 
@@ -22,7 +24,7 @@ public class RecoveryQueue implements RecoveryQueuePort {
     @Override
     public void sendRecoveryEmail(RecoveryTokenEntity recoveryToken){
         try {
-            queueClient.sendMessage(objectMapper.writeValueAsString(recoveryToken));
+            queueClient.sendMessage(Base64.getEncoder().encodeToString(objectMapper.writeValueAsBytes(recoveryToken)));
         } catch (JsonProcessingException e) {
             throw new BusinessException(e.getMessage());
         }

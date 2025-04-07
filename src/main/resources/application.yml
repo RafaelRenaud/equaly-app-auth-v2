@@ -9,6 +9,13 @@ spring:
     url: ${DATABASE_URL}
     username: ${DATABASE_USER}
     password: ${DATABASE_PASSWORD}
+    hikari:
+      pool-name: eQualyAuthenticatorPool
+      maximum-pool-size: 5
+      minimum-idle: 2
+      idle-timeout: 60000
+      connection-timeout: 30000
+      max-lifetime: 600000
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
