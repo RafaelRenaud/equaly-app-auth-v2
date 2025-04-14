@@ -3,4 +3,4 @@
 *.md
 .idea
 target/
-!target/auth-0.0.1-SNAPSHOT.jar
+!target/*.jar

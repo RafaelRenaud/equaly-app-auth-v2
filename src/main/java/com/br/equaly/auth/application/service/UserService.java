@@ -67,6 +67,6 @@ public class UserService implements UserUseCase {
 
     @Override
     public void updateUserPassword(User user, String newPassword) {
-        userRepository.changePassword(user.getId(), user.getPassword(), newPassword);
+        userRepository.changePassword(user.getId(), user.getPassword(), newPassword, user.getUsername());
     }
 }

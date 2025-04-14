@@ -5,11 +5,4 @@
       <excludeFolder url="file://$MODULE_DIR$/target/generated-sources/openapi/src/main/java/org" />
     </content>
   </component>
-  <component name="FacetManager">
-    <facet type="azure" name="Azure">
-      <configuration>
-        <option name="dotAzurePath" value="$MODULE_DIR$/.azure" />
-      </configuration>
-    </facet>
-  </component>
 </module>
