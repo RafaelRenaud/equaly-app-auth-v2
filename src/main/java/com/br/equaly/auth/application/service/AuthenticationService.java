@@ -66,7 +66,10 @@ public class AuthenticationService implements AuthenticationUseCase {
         }
 
         if((isAdmin
-                && (user.getRoles().stream().noneMatch(role -> role.getName().equals(Role.SUPERUSER))
+                && (user.getRoles().stream().noneMatch(role -> role.getName().equals(Role.EQUALY_MASTER_ADMIN)
+                || role.getName().equals(Role.MASTER_ADMIN)
+                || role.getName().equals(Role.COMMON_ADMIN)
+        )
                 || user.getCompany().getCredentials().stream().noneMatch(
                 credential -> credential.getType().equals(CredentialType.ADMINISTRATIVE) && credential.getIsActive())))
                 || (!isAdmin && user.getCompany().getCredentials().stream().noneMatch(
@@ -84,7 +87,9 @@ public class AuthenticationService implements AuthenticationUseCase {
         }
 
         User user = userUseCase.getUserById(Long.valueOf(token.getClaim("sub")));
-        Boolean isAdmin = user.getRoles().stream().anyMatch(role -> role.getName().equals(Role.SUPERUSER));
+        Boolean isAdmin = user.getRoles().stream().anyMatch(role -> role.getName().equals(Role.EQUALY_MASTER_ADMIN)
+                || role.getName().equals(Role.MASTER_ADMIN)
+                || role.getName().equals(Role.COMMON_ADMIN));
         this.validateAuthentication(user,null, isAdmin, Boolean.TRUE);
         return jwtPort.encodeToken(isAdmin, user);
     }

@@ -4,20 +4,14 @@ import org.springframework.security.core.GrantedAuthority;
 
 public class EqualyGrantedAuthority implements GrantedAuthority {
 
-    private final String name;
-    private final String type;
+    private final String role;
 
-    public EqualyGrantedAuthority(String name, String type) {
-        this.name = name;
-        this.type = type;
+    public EqualyGrantedAuthority(String role) {
+        this.role = role;
     }
 
     @Override
     public String getAuthority() {
-        return name;
-    }
-
-    public String getType() {
-        return type;
+        return role;
     }
 }

@@ -93,35 +93,37 @@ public class JwtUtils implements JwtPort {
     public Map<String, Object> getClaimsFromToken(User user, String appkey, Boolean isAdmin) {
         Map<String, Object> claims = new HashMap<>();
 
-        claims.put("username", user.getUsername());
-        claims.put("name", user.getUniversalUser().getName());
-        claims.put("identity_number", user.getUniversalUser().getDocumentNumber());
-        claims.put("preferred_username", user.getNickname());
-        claims.put("picture", user.getAvatarId());
-        claims.put("company_id", user.getCompany().getId().toString());
-        claims.put("company_name", user.getCompany().getName());
-        claims.put("company_display_name", user.getCompany().getDisplayName());
-        claims.put("company_business_name", user.getCompany().getTradingName());
-        claims.put("company_tax_id", user.getCompany().getDocument());
-        claims.put("company_alias", user.getCompany().getAlias());
-        claims.put("department_id", user.getDepartment().getId().toString());
-        claims.put("department_name", user.getDepartment().getName());
+        claims.put("user", Map.of("username", user.getUsername(),
+                "name", user.getUniversalUser().getName(),
+                "identity_number", user.getUniversalUser().getDocumentNumber(),
+                "preferred_username", user.getNickname(),
+                "picture", user.getAvatarId()));
+
+        claims.put("company", Map.of("company_id", user.getCompany().getId().toString(),
+                "company_name", user.getCompany().getName(),
+                "company_display_name", user.getCompany().getDisplayName(),
+                "company_business_name", user.getCompany().getTradingName(),
+                "company_tax_id", user.getCompany().getDocument(),
+                "company_alias", user.getCompany().getAlias()));
+
+        claims.put("department", Map.of("department_id", user.getDepartment().getId().toString(),
+                "department_name", user.getDepartment().getName()));
 
         if (isAdmin) {
             claims.put("roles", user.getRoles().stream()
-                    .filter(userRole -> userRole.getName().equals(Role.SUPERUSER))
-                    .map(userRole -> Map.of(
-                            "name", userRole.getName(),
-                            "type", userRole.getType()
-                    ))
+                    .filter(userRole ->
+                            userRole.getName().equals(Role.EQUALY_MASTER_ADMIN) ||
+                                    userRole.getName().equals(Role.MASTER_ADMIN) ||
+                                    userRole.getName().equals(Role.COMMON_ADMIN))
+                    .map(userRole -> userRole.getName().toString())
                     .toList());
         } else {
             claims.put("roles", user.getRoles().stream()
-                    .filter(userRole -> !userRole.getName().equals(Role.SUPERUSER))
-                    .map(userRole -> Map.of(
-                            "name", userRole.getName(),
-                            "type", userRole.getType()
-                    ))
+                    .filter(userRole ->
+                            !userRole.getName().equals(Role.EQUALY_MASTER_ADMIN) &&
+                                    !userRole.getName().equals(Role.MASTER_ADMIN) &&
+                                    !userRole.getName().equals(Role.COMMON_ADMIN))
+                    .map(userRole -> userRole.getName().toString())
                     .toList());
         }
 

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.br.equaly</groupId>
 	<artifactId>auth</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<name>equaly-app-auth</name>
 	<description>eQualy Authentication Backend Application</description>
 	<properties>

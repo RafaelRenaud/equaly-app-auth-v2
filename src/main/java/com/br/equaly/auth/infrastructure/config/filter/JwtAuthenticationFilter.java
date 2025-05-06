@@ -53,20 +53,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 Map<String, Object> claims = jwt.getClaims();
                 String username = claims.get("sub").toString();
-                Object rolesClaim = claims.get("roles");
-
+                List<String> rolesList = jwt.getClaimAsStringList("roles");
                 List<GrantedAuthority> authorities = new ArrayList<>();
 
-                if(rolesClaim instanceof List) {
-                    List<Map<String, Object>> rolesList = (List<Map<String, Object>>) rolesClaim;
-                    for (Map<String, Object> role : rolesList) {
-                        String roleName = (String) role.get("name");
-                        String roleType = (String) role.get("type");
-                        authorities.add(new EqualyGrantedAuthority(roleName, roleType));
-                    }
-                }else{
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Roles for User");
-                    return;
+                for(String role : rolesList) {
+                    authorities.add(new EqualyGrantedAuthority(role));
                 }
 
                 JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(jwt, authorities, username);
