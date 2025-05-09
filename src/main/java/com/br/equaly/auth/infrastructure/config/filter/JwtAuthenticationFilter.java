@@ -1,6 +1,5 @@
 package com.br.equaly.auth.infrastructure.config.filter;
 
-import com.br.equaly.auth.infrastructure.adapter.out.repository.SessionTokenRepository;
 import com.br.equaly.auth.infrastructure.config.authority.EqualyGrantedAuthority;
 import com.br.equaly.auth.util.ConstantsUtils;
 import com.br.equaly.auth.util.JwtUtils;
@@ -25,12 +24,9 @@ import java.util.Map;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final SessionTokenRepository sessionTokenRepository;
     private final JwtUtils jwtUtils;
 
-
-    public JwtAuthenticationFilter(SessionTokenRepository sessionTokenRepository, JwtUtils jwtUtils) {
-        this.sessionTokenRepository = sessionTokenRepository;
+    public JwtAuthenticationFilter(JwtUtils jwtUtils) {
         this.jwtUtils = jwtUtils;
     }
 

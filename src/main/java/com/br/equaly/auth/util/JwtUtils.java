@@ -6,7 +6,9 @@ import com.br.equaly.auth.domain.enums.CredentialType;
 import com.br.equaly.auth.domain.enums.Role;
 import com.br.equaly.auth.domain.model.Credential;
 import com.br.equaly.auth.domain.model.User;
+import com.br.equaly.auth.infrastructure.adapter.out.repository.AppkeyRepository;
 import com.br.equaly.auth.infrastructure.adapter.out.repository.SessionTokenRepository;
+import com.br.equaly.auth.infrastructure.entity.AppkeyEntity;
 import com.br.equaly.auth.infrastructure.entity.SessionTokenEntity;
 import com.br.equaly.auth.model.OAuthTokenResponse;
 import io.jsonwebtoken.Claims;
@@ -25,10 +27,12 @@ import java.util.*;
 public class JwtUtils implements JwtPort {
 
     private final SessionTokenRepository sessionTokenRepository;
+    private final AppkeyRepository appkeyRepository;
     private final CredentialUseCase credentialUseCase;
 
-    public JwtUtils(SessionTokenRepository sessionTokenRepository, CredentialUseCase credentialUseCase) {
+    public JwtUtils(SessionTokenRepository sessionTokenRepository, AppkeyRepository appkeyRepository, CredentialUseCase credentialUseCase) {
         this.sessionTokenRepository = sessionTokenRepository;
+        this.appkeyRepository = appkeyRepository;
         this.credentialUseCase = credentialUseCase;
     }
 
@@ -95,16 +99,17 @@ public class JwtUtils implements JwtPort {
 
         claims.put("user", Map.of("username", user.getUsername(),
                 "name", user.getUniversalUser().getName(),
-                "identity_number", user.getUniversalUser().getDocumentNumber(),
                 "preferred_username", user.getNickname(),
+                "email", user.getEmail(),
                 "picture", user.getAvatarId()));
 
-        claims.put("company", Map.of("company_id", user.getCompany().getId().toString(),
-                "company_name", user.getCompany().getName(),
-                "company_display_name", user.getCompany().getDisplayName(),
-                "company_business_name", user.getCompany().getTradingName(),
-                "company_tax_id", user.getCompany().getDocument(),
-                "company_alias", user.getCompany().getAlias()));
+        claims.put("company", Map.of("id", user.getCompany().getId().toString(),
+                "name", user.getCompany().getName(),
+                "display_name", user.getCompany().getDisplayName(),
+                "business_name", user.getCompany().getTradingName(),
+                "tax_id", user.getCompany().getDocument(),
+                "alias", user.getCompany().getAlias(),
+                "logo", user.getCompany().getLogoKey()));
 
         claims.put("department", Map.of("department_id", user.getDepartment().getId().toString(),
                 "department_name", user.getDepartment().getName()));
@@ -134,16 +139,26 @@ public class JwtUtils implements JwtPort {
 
     public Jwt validateToken(String token, String applicationKey) {
         try{
-            Credential credential = credentialUseCase.getCredentialByAppkey(applicationKey);
+            Optional<AppkeyEntity> appkey = appkeyRepository.findById(applicationKey);
+            String secretKey;
+
+            if(!appkey.isPresent()){
+                Credential credential = credentialUseCase.getCredentialByAppkey(applicationKey);
+                secretKey = credential.getSecret();
+                appkeyRepository.save(new AppkeyEntity(credential.getValue(), credential.getSecret()));
+            }else{
+                secretKey = appkey.get().getSecret();
+            }
+
             io.jsonwebtoken.Jwt jwt = Jwts.parser()
-                    .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(credential.getSecret())))
+                    .setSigningKey(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
                     .build()
                     .parseSignedClaims(token);
 
             Claims claims = (Claims) jwt.getPayload();
             Optional<SessionTokenEntity> sessionToken = sessionTokenRepository.findById(claims.getId());
 
-            if(!credential.getValue().equals(claims.get("azp"))
+            if(!applicationKey.equals(claims.get("azp"))
                     || sessionToken.isEmpty()
                     || !DigestUtils.sha256Hex(token.getBytes(StandardCharsets.UTF_8)).equals(sessionToken.get().getTokenHash())){
                 return null;
