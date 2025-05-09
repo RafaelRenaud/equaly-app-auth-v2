@@ -1,7 +1,6 @@
 package com.br.equaly.auth.infrastructure.entity;
 
 import com.br.equaly.auth.domain.enums.Role;
-import com.br.equaly.auth.domain.enums.SubRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,8 +30,4 @@ public class UserRoleEntity implements Serializable {
     @Column(name = "NAME")
     @Enumerated(EnumType.STRING)
     private Role name;
-
-    @Column(name = "TYPE")
-    @Enumerated(EnumType.STRING)
-    private SubRole type;
 }

@@ -1,6 +1,6 @@
 package com.br.equaly.auth.infrastructure.entity;
 
-import jakarta.persistence.Id;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;

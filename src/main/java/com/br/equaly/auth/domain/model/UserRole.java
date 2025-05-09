@@ -1,7 +1,6 @@
 package com.br.equaly.auth.domain.model;
 
 import com.br.equaly.auth.domain.enums.Role;
-import com.br.equaly.auth.domain.enums.SubRole;
 
 import java.io.Serializable;
 
@@ -13,16 +12,13 @@ public class UserRole implements Serializable {
 
     private Role name;
 
-    private SubRole type;
-
     public UserRole() {
     }
 
-    public UserRole(Long id, User user, Role name, SubRole type) {
+    public UserRole(Long id, User user, Role name) {
         this.id = id;
         this.user = user;
         this.name = name;
-        this.type = type;
     }
 
     public Long getId() {
@@ -47,13 +43,5 @@ public class UserRole implements Serializable {
 
     public void setName(Role name) {
         this.name = name;
-    }
-
-    public SubRole getType() {
-        return type;
-    }
-
-    public void setType(SubRole type) {
-        this.type = type;
     }
 }
