@@ -65,16 +65,25 @@ public class AuthenticationService implements AuthenticationUseCase {
             throw new BusinessException(messageSource.getMessage("error.company_not_active", null, LocaleContextHolder.getLocale()));
         }
 
-        if((isAdmin
-                && (user.getRoles().stream().noneMatch(role -> role.getName().equals(Role.EQUALY_MASTER_ADMIN)
-                || role.getName().equals(Role.MASTER_ADMIN)
-                || role.getName().equals(Role.COMMON_ADMIN)
-        )
-                || user.getCompany().getCredentials().stream().noneMatch(
-                credential -> credential.getType().equals(CredentialType.ADMINISTRATIVE) && credential.getIsActive())))
-                || (!isAdmin && user.getCompany().getCredentials().stream().noneMatch(
-                credential -> credential.getType().equals(CredentialType.OPERATIONAL) && credential.getIsActive()
-        ))){
+        if(
+                (isAdmin &&
+                        (user.getRoles().stream().noneMatch(
+                                role -> role.getName().equals(Role.EQUALY_MASTER_ADMIN)
+                                        || role.getName().equals(Role.MASTER_ADMIN)
+                                        || role.getName().equals(Role.COMMON_ADMIN)
+                        )
+                                || user.getCompany().getCredentials().stream().noneMatch(
+                                credential -> credential.getType().equals(CredentialType.ADMINISTRATIVE)
+                                        && credential.getIsActive())
+                        )
+                )
+                        || (!isAdmin &&
+                        (user.getCompany().getCredentials().stream().noneMatch(
+                                credential -> credential.getType().equals(CredentialType.OPERATIONAL) && credential.getIsActive()
+                        ) || user.getRoles().stream().allMatch(role -> role.getName().equals(Role.EQUALY_MASTER_ADMIN)
+                                || role.getName().equals(Role.MASTER_ADMIN)
+                                || role.getName().equals(Role.COMMON_ADMIN)))
+                )){
             throw new BusinessException(messageSource.getMessage("error.invalid_auth_method", null, LocaleContextHolder.getLocale()));
         }
     }
