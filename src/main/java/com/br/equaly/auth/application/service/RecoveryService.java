@@ -3,6 +3,7 @@ package com.br.equaly.auth.application.service;
 import com.br.equaly.auth.application.port.input.RecoveryUseCase;
 import com.br.equaly.auth.application.port.input.UserUseCase;
 import com.br.equaly.auth.application.port.output.RecoveryQueuePort;
+import com.br.equaly.auth.domain.enums.RecoveryTokenType;
 import com.br.equaly.auth.domain.model.User;
 import com.br.equaly.auth.infrastructure.adapter.out.repository.RecoveryTokenRepository;
 import com.br.equaly.auth.infrastructure.entity.RecoveryTokenEntity;
@@ -48,13 +49,14 @@ public class RecoveryService implements RecoveryUseCase {
                 && user.getDepartment().getIsActive()) {
             RecoveryTokenEntity recoveryToken = new RecoveryTokenEntity(
                     Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8)),
+                    RecoveryTokenType.RAC_RECOVERY,
                     this.generateRAC(),
                     user.getId(),
                     user.getEmail(),
                     user.getUniversalUser().getName(),
                     user.getUsername(),
                     user.getCompany().getName(),
-                    user.getCompany().getDisplayName(),
+                    user.getCompany().getTradingName(),
                     user.getCompany().getAlias(),
                     LocalDateTime.now()
             );
@@ -81,6 +83,21 @@ public class RecoveryService implements RecoveryUseCase {
                 && accountActivationRequest.getEmail().equals(user.getEmail())){
             this.changePassword(user, accountActivationRequest.getNewPassword());
             recoveryTokenRepository.deleteById(recoveryId);
+            recoveryQueuePort.sendRecoveryEmail(
+                    new RecoveryTokenEntity(
+                            Base64.getEncoder().encodeToString(UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8)),
+                            RecoveryTokenType.ACCOUNT_RECOVERY,
+                            null,
+                            user.getId(),
+                            user.getEmail(),
+                            user.getUniversalUser().getName(),
+                            user.getUsername(),
+                            user.getCompany().getName(),
+                            user.getCompany().getTradingName(),
+                            user.getCompany().getAlias(),
+                            LocalDateTime.now()
+                    )
+            );
         }
     }
 

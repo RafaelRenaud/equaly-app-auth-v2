@@ -1,5 +1,6 @@
 package com.br.equaly.auth.infrastructure.entity;
 
+import com.br.equaly.auth.domain.enums.RecoveryTokenType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -11,6 +12,8 @@ public class RecoveryTokenEntity implements Serializable {
 
     @Id
     private String id;
+
+    private RecoveryTokenType recoveryTokenType;
 
     private String code;
 
@@ -24,21 +27,22 @@ public class RecoveryTokenEntity implements Serializable {
 
     private String companyName;
 
-    private String companyDisplayName;
+    private String companyTradingName;
 
     private String companyAlias;
 
     private LocalDateTime createdAt;
 
-    public RecoveryTokenEntity(String id, String code, Long userId, String email, String username, String companyUsername, String companyName, String companyDisplayName, String companyAlias, LocalDateTime createdAt) {
+    public RecoveryTokenEntity(String id, RecoveryTokenType recoveryTokenType, String code, Long userId, String email, String username, String companyUsername, String companyName, String companyTradingName, String companyAlias, LocalDateTime createdAt) {
         this.id = id;
+        this.recoveryTokenType = recoveryTokenType;
         this.code = code;
         this.userId = userId;
         this.email = email;
         this.username = username;
         this.companyUsername = companyUsername;
         this.companyName = companyName;
-        this.companyDisplayName = companyDisplayName;
+        this.companyTradingName = companyTradingName;
         this.companyAlias = companyAlias;
         this.createdAt = createdAt;
     }
@@ -49,6 +53,14 @@ public class RecoveryTokenEntity implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public RecoveryTokenType getRecoveryTokenType() {
+        return recoveryTokenType;
+    }
+
+    public void setRecoveryTokenType(RecoveryTokenType recoveryTokenType) {
+        this.recoveryTokenType = recoveryTokenType;
     }
 
     public String getCode() {
@@ -99,12 +111,12 @@ public class RecoveryTokenEntity implements Serializable {
         this.companyName = companyName;
     }
 
-    public String getCompanyDisplayName() {
-        return companyDisplayName;
+    public String getCompanyTradingName() {
+        return companyTradingName;
     }
 
-    public void setCompanyDisplayName(String companyDisplayName) {
-        this.companyDisplayName = companyDisplayName;
+    public void setCompanyTradingName(String companyTradingName) {
+        this.companyTradingName = companyTradingName;
     }
 
     public String getCompanyAlias() {

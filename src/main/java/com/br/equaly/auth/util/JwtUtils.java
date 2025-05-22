@@ -79,7 +79,7 @@ public class JwtUtils implements JwtPort {
     private String getCredentialValue(Boolean isAdmin, User user, CredentialType adminType, CredentialType operationalType) {
         CredentialType credentialType = isAdmin ? adminType : operationalType;
         return user.getCompany().getCredentials().stream()
-                .filter(credential -> credential.getType().equals(credentialType))
+                .filter(credential -> credential.getType().equals(credentialType) && credential.getIsActive())
                 .findFirst()
                 .map(Credential::getValue)
                 .orElseThrow(() -> new IllegalArgumentException("Credencial não encontrada para o tipo: " + credentialType));
@@ -88,7 +88,7 @@ public class JwtUtils implements JwtPort {
     private String getCredentialSecret(Boolean isAdmin, User user, CredentialType adminType, CredentialType operationalType) {
         CredentialType credentialType = isAdmin ? adminType : operationalType;
         return user.getCompany().getCredentials().stream()
-                .filter(credential -> credential.getType().equals(credentialType))
+                .filter(credential -> credential.getType().equals(credentialType) && credential.getIsActive())
                 .findFirst()
                 .map(Credential::getSecret)
                 .orElseThrow(() -> new IllegalArgumentException("Secret não encontrado para o tipo de credencial: " + credentialType));
