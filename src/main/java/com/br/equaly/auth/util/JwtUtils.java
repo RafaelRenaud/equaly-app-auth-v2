@@ -97,22 +97,31 @@ public class JwtUtils implements JwtPort {
     public Map<String, Object> getClaimsFromToken(User user, String appkey, Boolean isAdmin) {
         Map<String, Object> claims = new HashMap<>();
 
-        claims.put("user", Map.of("username", user.getUsername(),
-                "name", user.getUniversalUser().getName(),
-                "preferred_username", user.getNickname(),
-                "email", user.getEmail(),
-                "picture", user.getAvatarId()));
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("username", user.getUsername());
+        userMap.put("name", user.getUniversalUser().getName());
+        userMap.put("preferred_username", user.getNickname());
+        userMap.put("email", user.getEmail());
+        userMap.put("picture", user.getAvatarId());
 
-        claims.put("company", Map.of("id", user.getCompany().getId().toString(),
-                "name", user.getCompany().getName(),
-                "display_name", user.getCompany().getDisplayName(),
-                "business_name", user.getCompany().getTradingName(),
-                "tax_id", user.getCompany().getDocument(),
-                "alias", user.getCompany().getAlias(),
-                "logo", user.getCompany().getLogoKey()));
+        claims.put("user", userMap);
 
-        claims.put("department", Map.of("department_id", user.getDepartment().getId().toString(),
-                "department_name", user.getDepartment().getName()));
+        Map<String, Object> companyMap = new HashMap<>();
+        companyMap.put("id", user.getCompany().getId().toString());
+        companyMap.put("name", user.getCompany().getName());
+        companyMap.put("display_name", user.getCompany().getDisplayName());
+        companyMap.put("business_name", user.getCompany().getTradingName());
+        companyMap.put("tax_id", user.getCompany().getDocument());
+        companyMap.put("alias", user.getCompany().getAlias());
+        companyMap.put("logo", user.getCompany().getLogoKey());
+
+        claims.put("company", companyMap);
+
+        Map<String, Object> departmentMap = new HashMap<>();
+        departmentMap.put("department_id", user.getDepartment().getId().toString());
+        departmentMap.put("department_name", user.getDepartment().getName());
+
+        claims.put("department", departmentMap);
 
         if (isAdmin) {
             claims.put("roles", user.getRoles().stream()

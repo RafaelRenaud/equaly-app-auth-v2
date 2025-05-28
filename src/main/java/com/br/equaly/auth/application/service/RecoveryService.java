@@ -105,6 +105,7 @@ public class RecoveryService implements RecoveryUseCase {
         if(newPassword.length() < 8
                 || newPassword.length() > 16
                 || bCryptPasswordEncoder.matches(newPassword, user.getPassword())
+                || newPassword.isBlank()
                 || newPassword.contains(" ")){
             throw new BusinessException(messageSource.getMessage("error.invalid_new_password", null, LocaleContextHolder.getLocale()));
         }
